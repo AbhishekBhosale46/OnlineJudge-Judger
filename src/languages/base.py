@@ -8,20 +8,20 @@ class BaseLanguage(ABC):
     """
 
     @abstractmethod
-    def compile(self):
+    def compile(self, submission_id):
         """
         Abstract method to compile the source code.
         """
         pass
 
     @abstractmethod
-    def run(self):
+    def run(self, submission_id):
         """
         Abstract method to run the compiled code.
         """
         pass
 
-    def cleanup(self):
+    def cleanup(self, submission_id):
         """
         Remove all the files and directories from the present working directory
 
@@ -30,6 +30,6 @@ class BaseLanguage(ABC):
         - run_output - output of the command
         """
 
-        cleanup_cmd = "/bin/sh -c 'rm -rf *' "
+        cleanup_cmd = f"/bin/sh -c 'rm -rf {submission_id}' "
         exit_code, cleanup_output = self.container.exec_run(cleanup_cmd)
         return exit_code, cleanup_output.decode('utf-8')

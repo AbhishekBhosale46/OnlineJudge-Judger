@@ -1,5 +1,6 @@
 import os
 import shutil
+import uuid
 from docker_manager import DockerManager
 from languages.cpp import CppLanguage
 from languages.python import PythonLanguage
@@ -51,35 +52,41 @@ def run_judger(language, time_limit, memory_limit, judger_vol_path, expected_pat
     # Get the specific language instance
     language_instance = get_language_instance(language, container, time_limit, memory_limit)
 
+    # Create unique submission id for each submission
+    submission_id = str(uuid.uuid4())
+
     try:
 
+        submission_dir = f'{judger_vol_path}/{submission_id}'
+        os.makedirs(submission_dir)
+
         # Create empty input file
-        open(f"{judger_vol_path}/ip.txt", "x")
+        open(f"{submission_dir}/ip.txt", "x")
 
         # Copy user program, ip, expected op to container
         if src_code_path:
-            shutil.copy(src_code_path, os.path.join(judger_vol_path, f"UserProgram.{language}"))
+            shutil.copy(src_code_path, os.path.join(submission_dir, f"UserProgram.{language}"))
         if src_code:
-            with open(os.path.join(judger_vol_path, f"UserProgram.{language}"), "w") as file:
+            with open(os.path.join(submission_dir, f"UserProgram.{language}"), "w") as file:
                 file.write(src_code)
         if ip_tc_path:
-            shutil.copy(ip_tc_path, os.path.join(judger_vol_path, "ip.txt"))
-        shutil.copy(expected_path, os.path.join(judger_vol_path, "expected_op.txt"))
+            shutil.copy(ip_tc_path, os.path.join(submission_dir, "ip.txt"))
+        shutil.copy(expected_path, os.path.join(submission_dir, "expected_op.txt"))
 
         # Compile the code
         if language in ["cpp", "java"]:
-            compile_exit_code, compile_output = language_instance.compile()
+            compile_exit_code, compile_output = language_instance.compile(submission_id=submission_id)
             if compile_exit_code == 1:
                 return "CE"
 
         # Run the code
-        run_exit_code, run_output = language_instance.run()
+        run_exit_code, run_output = language_instance.run(submission_id=submission_id)
 
         # If no errors then check for WA or AC
         if run_exit_code == 0:
-            with open(f"{judger_vol_path}/expected_op.txt", "r") as f:
+            with open(f"{submission_dir}/expected_op.txt", "r") as f:
                 expected_op_data = f.read()
-            with open(f"{judger_vol_path}/actual_op.txt", "r") as f:
+            with open(f"{submission_dir}/actual_op.txt", "r") as f:
                 actual_op_data = f.read()
             if actual_op_data.strip() == expected_op_data.strip():
                 return "AC"
@@ -103,4 +110,4 @@ def run_judger(language, time_limit, memory_limit, judger_vol_path, expected_pat
     finally:
 
         # Cleanup the mounted volume
-        language_instance.cleanup()
+        language_instance.cleanup(submission_id=submission_id)

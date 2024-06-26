@@ -20,7 +20,7 @@ class PythonLanguage(BaseLanguage):
         self.time_limit = time_limit
         self.memory_limit = memory_limit
 
-    def run(self):
+    def run(self, submission_id):
         """
         Run the python code
 
@@ -29,7 +29,7 @@ class PythonLanguage(BaseLanguage):
         - run_output - output of the user program
         """
 
-        run_cmd = f"/bin/sh -c 'timeout {self.time_limit} python UserProgram.py < ip.txt > actual_op.txt' "
+        run_cmd = f"/bin/sh -c 'timeout {self.time_limit} python {submission_id}/UserProgram.py < {submission_id}/ip.txt > {submission_id}/actual_op.txt' "
         exit_code, run_output = self.container.exec_run(run_cmd, stderr=True, stdout=True, stdin=True)
         return exit_code, run_output.decode('utf-8')
 
