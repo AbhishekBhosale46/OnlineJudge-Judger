@@ -27,7 +27,7 @@ def get_language_instance(language, container, time_limit, memory_limit):
         raise ValueError("Unsupported language")
 
 
-def run_judger(language, time_limit, memory_limit, judger_vol_path, src_code_path, expected_path, ip_tc_path=None):
+def run_judger(language, time_limit, memory_limit, judger_vol_path, expected_path, ip_tc_path=None, src_code_path=None, src_code=None):
     """
     Orchestrates the compilation and execution of the provided source code within a Docker container.
 
@@ -57,10 +57,14 @@ def run_judger(language, time_limit, memory_limit, judger_vol_path, src_code_pat
         open(f"{judger_vol_path}/ip.txt", "x")
 
         # Copy user program, ip, expected op to container
-        shutil.copy(src_code_path, os.path.join(judger_vol_path, f"UserProgram.{language}"))
-        shutil.copy(expected_path, os.path.join(judger_vol_path, "expected_op.txt"))
+        if src_code_path:
+            shutil.copy(src_code_path, os.path.join(judger_vol_path, f"UserProgram.{language}"))
+        if src_code:
+            with open(os.path.join(judger_vol_path, f"UserProgram.{language}"), "w") as file:
+                file.write(src_code)
         if ip_tc_path:
             shutil.copy(ip_tc_path, os.path.join(judger_vol_path, "ip.txt"))
+        shutil.copy(expected_path, os.path.join(judger_vol_path, "expected_op.txt"))
 
         # Compile the code
         if language in ["cpp", "java"]:
