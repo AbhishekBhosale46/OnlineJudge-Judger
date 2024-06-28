@@ -16,7 +16,7 @@ print(
         language='py',
         time_limit=1,
         memory_limit=128,
-        in_tc="10\n5",
+        std_in="10\n5",
         judger_vol_path=r"PATH_TO_CONTAINER_VOL",
         src_code="a=int(input())\nb=int(input())\nprint('Sum is', a+b)",
         expected_out="Sum is 15"

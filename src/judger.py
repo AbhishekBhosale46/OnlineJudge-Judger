@@ -28,9 +28,9 @@ def get_language_instance(language, container, time_limit, memory_limit):
         raise ValueError("Unsupported language")
 
 
-def run_judger(language, time_limit, memory_limit, \
-               judger_vol_path, src_code=None, in_tc=None, expected_out=None, \
-               src_code_path=None, in_tc_path=None, expected_out_path=None):
+def run_judger(language, time_limit, memory_limit,
+               judger_vol_path, src_code=None, std_in=None, expected_out=None,
+               src_code_path=None, std_in_path=None, expected_out_path=None):
     """
     Orchestrates the compilation and execution of the provided source code within a Docker container.
 
@@ -40,11 +40,11 @@ def run_judger(language, time_limit, memory_limit, \
     - memory_limit (int): Memory limit in mbs.
     - judger_vol_path (path): Path of the directory to be mounted as container volume.
     - src_code (str): Source code to be executed
-    - in_tc (str): Std input passed to program
+    - std_in (str): Std input passed to program
     - expected_out (str): Expected output of the program
     - source_code_path (path): Source code file path.
     - expected_out_path (path): Expected output file path.
-    - in_tc_path (str, optional): Input testcase file path.
+    - std_in_path (str, optional): Input testcase file path.
 
     Returns:
     - status (str): Status of the task.
@@ -75,11 +75,11 @@ def run_judger(language, time_limit, memory_limit, \
             raise ValueError("Source code not provided")
 
         # copy input to container
-        if in_tc_path:
-            shutil.copy(in_tc_path, os.path.join(submission_dir, "ip.txt"))
-        elif in_tc:
+        if std_in_path:
+            shutil.copy(std_in_path, os.path.join(submission_dir, "ip.txt"))
+        elif std_in:
             with open(os.path.join(submission_dir, f"ip.txt"), "w") as file:
-                file.write(in_tc)
+                file.write(std_in)
         else:
             raise ValueError("Input testcase not provided")
 
@@ -132,9 +132,8 @@ def run_judger(language, time_limit, memory_limit, \
         language_instance.cleanup(submission_id=submission_id)
 
 
-
-def custom_run(language, time_limit, memory_limit, \
-               judger_vol_path, src_code=None, in_tc=None, src_code_path=None):
+def custom_run(language, time_limit, memory_limit,
+               judger_vol_path, src_code=None, std_in=None, src_code_path=None):
     """
     Function to run custom test case with given output.
 
@@ -144,9 +143,9 @@ def custom_run(language, time_limit, memory_limit, \
     - memory_limit (int): Memory limit in mbs.
     - judger_vol_path (path): Path of the directory to be mounted as container volume.
     - src_code (str): Source code to be executed
-    - in_tc (str): Std input passed to program
+    - std_in (str): Std input passed to program
     - source_code_path (path): Source code file path.
-    - in_tc_path (str, optional): Input testcase file path.
+    - std_in_path (str, optional): Input testcase file path.
 
     Returns:
     - status (str): Status of the task.
@@ -180,9 +179,9 @@ def custom_run(language, time_limit, memory_limit, \
             raise ValueError("Source code not provided")
 
         # copy input to container
-        if in_tc:
+        if std_in:
             with open(os.path.join(submission_dir, f"ip.txt"), "w") as file:
-                file.write(in_tc)
+                file.write(std_in)
         else:
             raise ValueError("Input testcase not provided")
 
